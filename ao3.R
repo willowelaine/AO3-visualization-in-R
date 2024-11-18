@@ -108,7 +108,7 @@ View(na_category)
 works_data<-read.csv("data/ao3data/works-20210226.csv") 
 works_data$creation.date <- as.Date(works_data$creation.date)
 works_within_range <- works_data %>%
-  filter(creation.date >= as.Date("2019-02-26") & creation.date <= as.Date("2021-02-26"))
+  filter(creation.date >= as.Date("2017-02-26") & creation.date <= as.Date("2021-02-26"))
 
 View(works_within_range)
 
@@ -139,6 +139,28 @@ View(works_tags_split)
 na_category <- works_tags_split %>%
   filter(is.na(category))
 
+no_na_category<-works_tags_split %>%
+  filter(!is.na(category))
+
 View(na_category)
+write.csv(works_tags_split, "filename.csv", row.names = FALSE)
 
 
+# Count frequencies by category and date
+# Extract year and month, and aggregate data
+monthly_data <- no_na_category %>%
+  mutate(year_month = format(creation.date, "%Y-%m")) %>%  # Extract year-month
+  group_by(year_month, category) %>%
+  summarize(frequency = n(), .groups = "drop")  # Count occurrences
+
+# Plot trends
+ggplot(monthly_data, aes(x = year_month, y = frequency, color = category, group = category)) +
+  geom_line() +
+  labs(
+    title = "Trends by Category Over Time",
+    x = "Month",
+    y = "Frequency",
+    color = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for readability
