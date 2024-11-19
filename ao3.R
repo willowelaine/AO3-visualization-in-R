@@ -143,7 +143,7 @@ no_na_category<-works_tags_split %>%
   filter(!is.na(category))
 
 View(na_category)
-write.csv(works_tags_split, "filename.csv", row.names = FALSE)
+write.csv(no_na_category, "filename2.csv", row.names = FALSE)
 
 
 # Count frequencies by category and date
