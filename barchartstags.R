@@ -28,21 +28,22 @@ freeform_tags <- tagData %>%
 
 View(freeform_tags)
 
-# Join the works_data with freeform_tags
-works_data_with_names <- works_data %>%
-  left_join(freeform_tags, by = c("tags" = "id"))
 
 View(works_data_with_names)
 
 # Split data into pre-pandemic, early pandemic, and late pandemic
-prePandemicData <- works_data_with_names %>%
-  filter(creation.date >= as.Date("2019-04-01") & creation.date <= as.Date("2020-02-29"))
+prePandemicData <- works_data %>%
+  filter(creation.date >= as.Date("2019-03-01") & creation.date <= as.Date("2019-12-31"))
 
-earlyPandemicData <- works_data_with_names %>%
-  filter(creation.date >= as.Date("2020-03-01") & creation.date <= as.Date("2020-11-30"))
+pandemicData <- works_data %>%
+  filter(creation.date >= as.Date("2020-03-01") & creation.date <= as.Date("2020-12-31"))
 
-laterPandemicData <- works_data_with_names %>%
-  filter(creation.date >= as.Date("2020-12-01") & creation.date <= as.Date("2021-02-28"))
+
+# Join the works_data with freeform_tags
+prePandemicData <- prePandemicData %>%
+  left_join(freeform_tags, by = c("tags" = "id"))
+pandemicData <- pandemicData %>%
+  left_join(freeform_tags, by = c("tags" = "id"))
 
 
 process_tags <- function(data) {
@@ -56,8 +57,7 @@ process_tags <- function(data) {
 
 # Apply process_tags function to each period
 prePandemic_tags <- process_tags(prePandemicData)
-earlyPandemic_tags <- process_tags(earlyPandemicData)
-laterPandemic_tags <- process_tags(laterPandemicData)
+pandemic_tags <- process_tags(pandemicData)
 
 # Function to filter out "Redacted" and get top tags
 filter_and_top_tags <- function(tags, n = 10) {
@@ -68,18 +68,16 @@ filter_and_top_tags <- function(tags, n = 10) {
 
 # Get top 10 tags for each period
 prePandemic_top_tags <- filter_and_top_tags(prePandemic_tags)
-earlyPandemic_top_tags <- filter_and_top_tags(earlyPandemic_tags)
-laterPandemic_top_tags <- filter_and_top_tags(laterPandemic_tags)
+pandemic_top_tags <- filter_and_top_tags(pandemic_tags)
 
 # Combine data for visualization
 combined_tags <- bind_rows(
-  prePandemic_top_tags %>% mutate(period = "Pre-Pandemic (April 2019 – February 2020)"),
-  earlyPandemic_top_tags %>% mutate(period = "Early Pandemic (March 2020 – November 2020)"),
-  laterPandemic_top_tags %>% mutate(period = "Later Pandemic (December 2020 – February 2021)")
+  prePandemic_top_tags %>% mutate(period = "Pre-Pandemic (March 2019 – December 2019)"),
+  pandemic_top_tags %>% mutate(period = "Pandemic (March 2020 – December 2020)")
 )
 
 # Write the combined data to a CSV (optional)
-write.csv(combined_tags, "tagsPercentages.csv", row.names = FALSE)
+write.csv(combined_tags, "percentageCombined.csv", row.names = FALSE)
 
 # Create a faceted bar chart with percentages
 ggplot(combined_tags, aes(x = reorder(name, percentage), y = percentage, fill = period)) +
@@ -108,9 +106,8 @@ ggplot(combined_tags, aes(x = reorder(name, percentage), y = percentage, fill = 
 
 combined_tags <- combined_tags %>%
   mutate(period = case_when(
-    period == "Pre-Pandemic (April 2019 – February 2020)" ~ "Pre-Pandemic",
-    period == "Early Pandemic (March 2020 – November 2020)" ~ "Early Pandemic",
-    period == "Later Pandemic (December 2020 – February 2021)" ~ "Later Pandemic",
+    period == "Pre-Pandemic (March 2019 – December 2019)" ~ "Pre-Pandemic",
+    period == "Pandemic (March 2020 – December 2020)" ~ "Pandemic",
    
     TRUE ~ period
   ))
@@ -119,15 +116,12 @@ combined_tags <- combined_tags %>%
 combined_tags <- combined_tags %>%
   mutate(period = factor(period, levels = c(
     "Pre-Pandemic",  # Move this to the first position
-    "Early Pandemic",
-    "Later Pandemic"
+    "Pandemic"
   )))
 # Create custom legend labels with parentheses
 legend_labels <- c(
-  "Pre-Pandemic (April 2019 – February 2020)",
-  "Early Pandemic (March 2020 – November 2020)",
-  "Later Pandemic (December 2020 – February 2021)"
-
+  "Pre-Pandemic (March 2019 – December 2019)",
+  "Pandemic (March 2020 – December 2020)"
 )
 
 
@@ -138,7 +132,7 @@ ggplot(combined_tags, aes(x = reorder(name, percentage), y = percentage, fill = 
   geom_text(
     aes(label = sprintf("%.2f", percentage)),  # Format percentage with 3 decimal places
     position = position_stack(vjust = 0.5),
-    size = 3, color = "white"
+    size = 3.5, color = "white"
   ) +
   coord_flip() +
   facet_wrap(~ period, scales = "free_y") +
@@ -149,14 +143,20 @@ ggplot(combined_tags, aes(x = reorder(name, percentage), y = percentage, fill = 
     fill = "Period"  # Legend title
   ) +
   scale_fill_manual(
-    values = c("#88E0EF", "#FF5151", "#FF9B6A"),  # Customize colors if needed
+    values = c("#88E0EF", "#FF5151"),  # Customize colors if needed
     labels = legend_labels  # Use custom legend labels with parentheses
   ) +
-  theme_minimal() +
+  theme_minimal() + 
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    axis.text.y = element_text(size = 10),
-    plot.margin = margin(t = 30, r = 20, b = 20, l = 20)
-  )
+    plot.title = element_text(color = "darkred", size = 14, face = "bold", hjust = 0.5),  # Center and style title
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
+    legend.position = "right",  # Legend on the right
+    panel.grid.major = element_line(color = "#999999", size = 0.3),  # Major grid lines
+    panel.grid.minor = element_line(color = "#999999", size = 0.2,linetype = "dotted"),  # Minor grid lines
+    panel.background = element_rect(fill = "#f4efde", color = NA),  # Background of the panel
+    plot.background = element_rect(fill = "#f4efde", color = NA),  # Background of the entire plot
+    legend.background = element_rect(fill = "#f4efde", color = NA),  # Background for the legend
+    plot.margin = margin(20, 20, 20, 20)  # Add padding around the plot
+  ) 
 
 
