@@ -154,11 +154,13 @@ monthly_data <- no_na_category %>%
   group_by(year_month, category) %>%
   summarize(frequency = n(), .groups = "drop")  # Count occurrences
 
+View(monthly_data)
+
 monthly_data <- monthly_data %>%
   filter(creation.date >= as.Date("2019-01-01") & creation.date <= as.Date("2021-01-31"))
 
 # Plot trends
-ggplot(monthly_data, aes(x = year_month, y = frequency, color = category, group = category)) +
+ggplot(no_na_category, aes(x = year_month, y = frequency, color = category, group = category)) +
   geom_line() +
   labs(
     title = "Trends by Category Over Time",
@@ -212,11 +214,19 @@ ggplot(daily_data, aes(x = creation.date, y = frequency,fill = category)) +
     axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
     legend.position = "right"  # Adjust legend position
   ) +
-  theme_minimal() + theme(
-    axis.text.x = element_text(color = "darkred", angle = 45, hjust = 1, size = 12),  # X-axis text in dark red
-    axis.text.y = element_text(color = "darkred", size = 12),  # Y-axis text in dark red
-    legend.position = "right"  # Keep legend position
-  )
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(color = "darkred", size = 14, face = "bold", hjust = 0.5),  # Center and style title
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
+    legend.position = "right",  # Legend on the right
+    panel.grid.major = element_line(color = "#999999", size = 0.3),  # Major grid lines
+    panel.grid.minor = element_line(color = "#999999", size = 0.2,linetype = "dotted"),  # Minor grid lines
+    panel.background = element_rect(fill = "#f4efde", color = NA),  # Background of the panel
+    plot.background = element_rect(fill = "#f4efde", color = NA),  # Background of the entire plot
+    legend.background = element_rect(fill = "#f4efde", color = NA),  # Background for the legend
+    plot.margin = margin(20, 20, 20, 20)  # Add padding around the plot
+  ) 
+  
 
 
 
