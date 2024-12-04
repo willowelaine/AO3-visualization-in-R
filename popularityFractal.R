@@ -29,13 +29,24 @@ filtered_data <- filtered_data %>%
   summarize(Frequency = n(), .groups = "drop")
 
 
-
+filtered_data <- filtered_data %>%
+  mutate(category = case_when(
+    category == "Anime/ Manga" ~ "Anime/Manga",
+    category == "Books and Literature" ~ "Books/Literature",
+    category == "Cartoons/Comics/Graphicnovels" ~ "Cartoons/Comics/Graphic Novels",
+    category == "Celebrities/Real/People" ~ "Celebrities/Real People",
+    category == "Music and Bands" ~ "Music/Bands",
+    category == "Other/Media" ~ "Other Media",
+    category == "Tv shows" ~ "TV Shows",
+    category == "Videogames" ~ "Video Games",
+    TRUE ~ category  # Keep the original name if no match
+  ))
 
 # Create the line graph with monthly ticks
 ggplot(filtered_data, aes(x = creation.date, y = Frequency, group = category, color = category)) +
   geom_line(linewidth = .2) +
   geom_point(size = .2) +
-  facet_wrap(~ category, scales = "free_y") +  # Separate graphs for each category
+  facet_wrap(~ category, scales = "fixed") +  # Separate graphs for each category
   scale_x_date(
     date_breaks = "1 month",   # Monthly tick marks
     date_labels = "%b %Y"     # Format labels as "Jan 2019", "Feb 2019", etc.
@@ -46,15 +57,15 @@ ggplot(filtered_data, aes(x = creation.date, y = Frequency, group = category, co
     y = "Frequency",
     color = "Category"
   ) +
-  theme_minimal() +
+  theme_minimal() + 
   theme(
-    strip.text = element_text(size = 12),  # Category labels
-    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
-    legend.position = "none"  # Remove legend
-  )
-+
-  theme_minimal() + theme(
-    axis.text.x = element_text(color = "darkred", angle = 45, hjust = 1, size = 12),  # X-axis text in dark red
-    axis.text.y = element_text(color = "darkred", size = 12),  # Y-axis text in dark red
-    legend.position = "right"  # Keep legend position
-  )
+    plot.title = element_text(color = "darkred", size = 14, face = "bold", hjust = 0.5),  # Center and style title
+    axis.text.x = element_text(angle = 45, hjust = 1, size=5),  # Rotate x-axis labels
+    legend.position = "right",  # Legend on the right
+    panel.grid.major = element_line(color = "#999999", size = 0.3),  # Major grid lines
+    panel.grid.minor = element_line(color = "#999999", size = 0.2,linetype = "dotted"),  # Minor grid lines
+    panel.background = element_rect(fill = "#f4efde", color = NA),  # Background of the panel
+    plot.background = element_rect(fill = "#f4efde", color = NA),  # Background of the entire plot
+    legend.background = element_rect(fill = "#f4efde", color = NA),  # Background for the legend
+    plot.margin = margin(20, 20, 20, 20)  # Add padding around the plot
+  ) 

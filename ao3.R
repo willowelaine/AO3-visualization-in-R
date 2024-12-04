@@ -185,10 +185,33 @@ daily_data <- filtered_data %>%
   group_by(creation.date, category) %>%
   summarize(frequency = n(), .groups = "drop")  # Count occurrences
 
+View(no_na_category)
+daily_data <- daily_data %>%
+  mutate(category = case_when(
+    category == "anime_manga_fandoms" ~ "Anime/Manga",
+    category == "tvshows_fandoms" ~ "TV Shows",
+    category == "books_literature_fandoms" ~ "Books/Literature",
+    category == "videogames_fandoms" ~ "Video Games",
+    category == "music_bands_fandoms" ~ "Music/Bands",
+    category == "cartoons_comics_graphicnovels_fandoms" ~ "Cartoons/Comics/Graphic Novels",
+    category == "movies_fandoms" ~ "Movies",
+    category == "other_media_fandoms" ~ "Other Media",
+    category == "celebrities_real_people_fandoms" ~ "Celebrities/Real People",
+    category == "theater_fandoms" ~ "Theater",
+    category == "uncategorized_fandoms" ~ "Uncategorized",
+    TRUE ~ category  # Keep the original name if no match
+  ))
+
 # Calculate total frequency per category
 category_totals <- daily_data %>%
   group_by(category) %>%
   summarize(total_frequency = sum(frequency), .groups = "drop")
+
+View(daily_data)
+
+View(daily_data)
+
+
 
 # Reorder categories by total frequency (largest to smallest)
 daily_data <- daily_data %>%
